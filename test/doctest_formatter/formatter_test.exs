@@ -3,6 +3,8 @@ defmodule DoctestFormatter.FormatterTest do
 
   import DoctestFormatter.Formatter
 
+  # TODO: test that return value is never split into multiple lines
+
   describe "format/2" do
     test "works for empty strings" do
       assert format("", []) == ""
