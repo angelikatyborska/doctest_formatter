@@ -41,7 +41,9 @@ defmodule DoctestFormatter.Parser do
       else
         case doctest_start(line) do
           nil ->
-            chunks = append_to_current_or_new_chunk(acc.chunks, %OtherContent{}, line)
+            chunks =
+              append_to_current_or_new_chunk_of_same_type(acc.chunks, %OtherContent{}, line)
+
             %{acc | chunks: chunks}
 
           {:start, code} ->
@@ -58,7 +60,7 @@ defmodule DoctestFormatter.Parser do
   end
 
   defp doctest_start(line) do
-    case Regex.run(~r/(\s|\t)*(iex>)\s?(.*)$/, line) do
+    case Regex.run(~r/^(\s|\t)*(iex>)\s?(.*)$/, line) do
       nil ->
         nil
 
@@ -68,7 +70,7 @@ defmodule DoctestFormatter.Parser do
   end
 
   defp doctest_continuation(line) do
-    case Regex.run(~r/(\s|\t)*(\.\.\.>)\s?(.*)$/, line) do
+    case Regex.run(~r/^(\s|\t)*(\.\.\.>)\s?(.*)$/, line) do
       nil ->
         if String.trim(line) === "" do
           nil
@@ -81,12 +83,20 @@ defmodule DoctestFormatter.Parser do
     end
   end
 
-  defp append_to_current_or_new_chunk([], struct, line) do
+  defp append_to_current_or_new_chunk_of_same_type([], struct, line) do
     [%{struct | lines: [line]}]
   end
 
-  defp append_to_current_or_new_chunk([current_chunk | rest], _, line) do
+  defp append_to_current_or_new_chunk_of_same_type(
+         [%module{} = current_chunk | rest],
+         %module{},
+         line
+       ) do
     [%{current_chunk | lines: [line | current_chunk.lines]} | rest]
+  end
+
+  defp append_to_current_or_new_chunk_of_same_type(list, struct, line) do
+    [%{struct | lines: [line]} | list]
   end
 
   defp append_to_current_chunk([current_chunk | rest], line) do

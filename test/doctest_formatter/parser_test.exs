@@ -20,7 +20,25 @@ defmodule DoctestFormatter.ParserTest do
       assert parse("  - one\n  - two\n") == [%OtherContent{lines: ["  - one", "  - two", ""]}]
     end
 
-    test "only single-line doctests" do
+    test "a single single-line doctest with other content in between" do
+      assert parse("- foo\n- bar\niex> 1 + 2\n3") == [
+               %OtherContent{lines: ["- foo", "- bar"]},
+               %DoctestExpression{lines: ["1 + 2"], result: "3", indentation: {:spaces, 0}}
+             ]
+
+      assert parse("iex>1 + 2\n3\n- foo\n- bar") == [
+               %DoctestExpression{lines: ["1 + 2"], result: "3", indentation: {:spaces, 0}},
+               %OtherContent{lines: ["- foo", "- bar"]}
+             ]
+
+      assert parse("# Hello, world!\n  iex> 1 + 2\n  3\n## Goodbye, Mars!") == [
+               %OtherContent{lines: ["# Hello, world!"]},
+               %DoctestExpression{lines: ["1 + 2"], result: "  3", indentation: {:spaces, 2}},
+               %OtherContent{lines: ["## Goodbye, Mars!"]}
+             ]
+    end
+
+    test "a single single-line doctest" do
       assert parse("iex> 1 + 2\n3") == [
                %DoctestExpression{lines: ["1 + 2"], result: "3", indentation: {:spaces, 0}}
              ]
@@ -38,7 +56,7 @@ defmodule DoctestFormatter.ParserTest do
              ]
     end
 
-    test "only multi-line doctests" do
+    test "a single multi-line doctest" do
       assert parse("iex> 1 +\n...> 2 +\n...> 4\n7") == [
                %DoctestExpression{
                  lines: ["1 +", "2 +", "4"],
@@ -69,6 +87,145 @@ defmodule DoctestFormatter.ParserTest do
                  result: "  7",
                  indentation: {:spaces, 6}
                }
+             ]
+    end
+
+    test "a single multi-line doctest with other content in between" do
+      assert parse("a\nb\niex> 1 +\n...> 2 +\n...> 4\n7") == [
+               %OtherContent{
+                 lines: ["a", "b"]
+               },
+               %DoctestExpression{
+                 lines: ["1 +", "2 +", "4"],
+                 result: "7",
+                 indentation: {:spaces, 0}
+               }
+             ]
+
+      assert parse("iex>1 +\n...>2 +\n...>4\n7\na\nb\n") == [
+               %DoctestExpression{
+                 lines: ["1 +", "2 +", "4"],
+                 result: "7",
+                 indentation: {:spaces, 0}
+               },
+               %OtherContent{
+                 lines: ["a", "b", ""]
+               }
+             ]
+
+      assert parse(
+               "for example `iex>`, like this:\n  iex> 1 +\n  ...> 2 +\n  ...> 4\n  7\na\nb\n"
+             ) == [
+               %OtherContent{
+                 lines: ["for example `iex>`, like this:"]
+               },
+               %DoctestExpression{
+                 lines: ["1 +", "2 +", "4"],
+                 result: "  7",
+                 indentation: {:spaces, 2}
+               },
+               %OtherContent{
+                 lines: ["a", "b", ""]
+               }
+             ]
+    end
+
+    test "doctests without results" do
+      assert parse("    iex> 1 + 2\n") == [
+               %DoctestExpression{lines: ["1 + 2"], result: nil, indentation: {:spaces, 4}}
+             ]
+
+      assert parse("    iex> 1 + 2\n  \n\n# Heading") == [
+               %DoctestExpression{lines: ["1 + 2"], result: nil, indentation: {:spaces, 4}},
+               %OtherContent{lines: ["", "# Heading"]}
+             ]
+
+      assert parse("      iex> 1 +\n...> 2 +\n  ...> 4\n  ") == [
+               %DoctestExpression{
+                 lines: ["1 +", "2 +", "4"],
+                 result: nil,
+                 indentation: {:spaces, 6}
+               }
+             ]
+    end
+
+    test "multiple doctests" do
+      assert parse("    iex> 1 + 2\n3\niex> 4 + 1\n5") == [
+               %DoctestExpression{lines: ["1 + 2"], result: "3", indentation: {:spaces, 4}},
+               %DoctestExpression{lines: ["4 + 1"], result: "5", indentation: {:spaces, 0}}
+             ]
+
+      assert parse("    iex> 1 + 2\n\niex> 4 + 1\n") == [
+               %DoctestExpression{lines: ["1 + 2"], result: nil, indentation: {:spaces, 4}},
+               %DoctestExpression{lines: ["4 + 1"], result: nil, indentation: {:spaces, 0}}
+             ]
+
+      assert parse("    iex> 1 + 2\n\n\niex> 4 + 1\n") == [
+               %DoctestExpression{lines: ["1 + 2"], result: nil, indentation: {:spaces, 4}},
+               %OtherContent{lines: [""]},
+               %DoctestExpression{lines: ["4 + 1"], result: nil, indentation: {:spaces, 0}}
+             ]
+
+      assert parse("    iex> 1 + 2\n\na\nb\niex> 1 +\n...> 2 +\n...> 4\n7") == [
+               %DoctestExpression{lines: ["1 + 2"], result: nil, indentation: {:spaces, 4}},
+               %OtherContent{
+                 lines: ["a", "b"]
+               },
+               %DoctestExpression{
+                 lines: ["1 +", "2 +", "4"],
+                 result: "7",
+                 indentation: {:spaces, 0}
+               }
+             ]
+
+      assert parse("foo\n    iex> 1 + 2\n\na\nb\niex> 1 +\n...> 2 +\n...> 4\n7") == [
+               %OtherContent{
+                 lines: ["foo"]
+               },
+               %DoctestExpression{lines: ["1 + 2"], result: nil, indentation: {:spaces, 4}},
+               %OtherContent{
+                 lines: ["a", "b"]
+               },
+               %DoctestExpression{
+                 lines: ["1 +", "2 +", "4"],
+                 result: "7",
+                 indentation: {:spaces, 0}
+               }
+             ]
+
+      assert parse("    iex> 1 + 2\n\niex> 1 +\n...> 2 +\n...> 4\n7") == [
+               %DoctestExpression{lines: ["1 + 2"], result: nil, indentation: {:spaces, 4}},
+               %DoctestExpression{
+                 lines: ["1 +", "2 +", "4"],
+                 result: "7",
+                 indentation: {:spaces, 0}
+               }
+             ]
+
+      assert parse("    iex> 1 + 2\n\niex> 1 +\n...> 2 +\n...> 4\n7\niex> 4 +\n...> 1\n5") == [
+               %DoctestExpression{lines: ["1 + 2"], result: nil, indentation: {:spaces, 4}},
+               %DoctestExpression{
+                 lines: ["1 +", "2 +", "4"],
+                 result: "7",
+                 indentation: {:spaces, 0}
+               },
+               %DoctestExpression{
+                 lines: ["4 +", "1"],
+                 result: "5",
+                 indentation: {:spaces, 0}
+               }
+             ]
+    end
+
+    test "trailing newline" do
+      assert parse("    iex> 1 + 2\n3\niex> 4 + 1\n5\n") == [
+               %DoctestExpression{lines: ["1 + 2"], result: "3", indentation: {:spaces, 4}},
+               %DoctestExpression{lines: ["4 + 1"], result: "5", indentation: {:spaces, 0}},
+               %OtherContent{lines: [""]}
+             ]
+
+      assert parse("foo\n") == [
+               %OtherContent{lines: ["foo", ""]}
              ]
     end
   end
