@@ -5,9 +5,9 @@
 ![number of downloads on Hex.pm](https://img.shields.io/hexpm/dt/doctest_formatter)
 ![license on Hex.pm](https://img.shields.io/hexpm/l/doctest_formatter)
 
-An Elixir formatter for Elixir code in doctests.
+An Elixir formatter for doctests.
 
-![Running mix format formats your Elixir code in doctests](https://raw.github.com/angelikatyborska/doctest_formatter/main/assets/mix-format.gif)
+![Running mix format formats your doctests](https://raw.github.com/angelikatyborska/doctest_formatter/main/assets/mix-format.gif)
 
 ## Installation
 
