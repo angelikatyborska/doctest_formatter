@@ -1,6 +1,9 @@
 defmodule ProjectWithUnformattedCode do
   @moduledoc """
   Documentation for `ProjectWithUnformattedCode`.
+
+  iex> ProjectWithFormattedCode.add(5,5)
+  10
   """
 
   @doc """

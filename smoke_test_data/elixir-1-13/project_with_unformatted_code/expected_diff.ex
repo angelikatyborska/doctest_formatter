@@ -2,10 +2,19 @@ defmodule ExpectedDiff do
   def diff do
     """
     diff --git a/smoke_test_data/elixir-1-13/project_with_unformatted_code/lib/project_with_unformatted_code.ex b/smoke_test_data/elixir-1-13/project_with_unformatted_code/lib/project_with_unformatted_code.ex
-    index 4014a07..e1c0611 100644
+    index 730bd33..53fdd6d 100644
     --- a/smoke_test_data/elixir-1-13/project_with_unformatted_code/lib/project_with_unformatted_code.ex
     +++ b/smoke_test_data/elixir-1-13/project_with_unformatted_code/lib/project_with_unformatted_code.ex
-    @@ -12,8 +12,8 @@ defmodule ProjectWithUnformattedCode do
+    @@ -2,7 +2,7 @@ defmodule ProjectWithUnformattedCode do
+       @moduledoc """
+       Documentation for `ProjectWithUnformattedCode`.
+    #{" "}
+    -  iex> ProjectWithFormattedCode.add(5,5)
+    +  iex> ProjectWithFormattedCode.add(5, 5)
+       10
+       \"""
+    #{" "}
+    @@ -15,8 +15,8 @@ defmodule ProjectWithUnformattedCode do
            3
     #{" "}
            iex> 1
@@ -16,7 +25,7 @@ defmodule ExpectedDiff do
     #{" "}
        \"""
        def add(a, b) do
-    @@ -21,10 +21,18 @@ defmodule ProjectWithUnformattedCode do
+    @@ -24,10 +24,18 @@ defmodule ProjectWithUnformattedCode do
        end
     #{" "}
        @doc \"""

@@ -24,21 +24,27 @@ defmodule DoctestFormatter.Formatter do
     forms =
       Macro.prewalk(forms, fn node ->
         case node do
-          {:@, meta1, [{:doc, meta2, [{:__block__, meta3, [doc_content]}]}]}
-          when is_binary(doc_content) ->
+          {:@, meta1, [{attribute_name, meta2, [{:__block__, meta3, [doc_content]}]}]}
+          when attribute_name in [:doc, :moduledoc] and is_binary(doc_content) ->
             formatted_doc_content = format_doc_content(doc_content, opts)
-            {:@, meta1, [{:doc, meta2, [{:__block__, meta3, [formatted_doc_content]}]}]}
+            {:@, meta1, [{attribute_name, meta2, [{:__block__, meta3, [formatted_doc_content]}]}]}
 
-          {:@, meta1, [{:doc, meta2, [doc_content]}]} when is_binary(doc_content) ->
+          {:@, meta1, [{attribute_name, meta2, [doc_content]}]}
+          when attribute_name in [:doc, :moduledoc] and is_binary(doc_content) ->
             formatted_doc_content = format_doc_content(doc_content, opts)
-            {:@, meta1, [{:doc, meta2, [formatted_doc_content]}]}
+            {:@, meta1, [{attribute_name, meta2, [formatted_doc_content]}]}
 
-          {:@, meta1, [{:doc, meta2, [{sigil, meta3, [{:<<>>, meta4, [doc_content]}, []]}]}]}
-          when is_binary(doc_content) and sigil in [:sigil_S, :sigil_s] ->
+          {:@, meta1,
+           [{attribute_name, meta2, [{sigil, meta3, [{:<<>>, meta4, [doc_content]}, []]}]}]}
+          when attribute_name in [:doc, :moduledoc] and is_binary(doc_content) and
+                 sigil in [:sigil_S, :sigil_s] ->
             formatted_doc_content = format_doc_content(doc_content, opts)
 
             {:@, meta1,
-             [{:doc, meta2, [{sigil, meta3, [{:<<>>, meta4, [formatted_doc_content]}, []]}]}]}
+             [
+               {attribute_name, meta2,
+                [{sigil, meta3, [{:<<>>, meta4, [formatted_doc_content]}, []]}]}
+             ]}
 
           node ->
             node

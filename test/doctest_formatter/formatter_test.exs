@@ -3,7 +3,7 @@ defmodule DoctestFormatter.FormatterTest do
 
   import DoctestFormatter.Formatter
 
-  describe "format/2" do
+  describe "format/2 when no doctests" do
     test "works for empty strings" do
       assert format("", []) == "\n"
     end
@@ -57,7 +57,9 @@ defmodule DoctestFormatter.FormatterTest do
     test "keeps only one newline" do
       assert format("\n\n", []) == "\n"
     end
+  end
 
+  describe "format/2 on @docs" do
     test "formats doctests in docs, multiline string" do
       input =
         """
@@ -598,4 +600,130 @@ defmodule DoctestFormatter.FormatterTest do
       assert output == desired_output
     end
   end
+
+  describe "format/2 on @moduledocs" do
+    test "formats doctests in moduledocs, multiline string" do
+      input =
+        """
+        defmodule Foo do
+          @moduledoc \"""
+          It adds two numbers together
+          iex>     Foo.add(4,2)
+          6
+          \"""
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @moduledoc \"""
+          It adds two numbers together
+          iex> Foo.add(4, 2)
+          6
+          \"""
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
+    end
+
+    test "formats doctests in moduledocs, single line string" do
+      input =
+        """
+        defmodule Foo do
+          @moduledoc \"It adds two numbers together\niex>     Foo.add(4,2)\n6\"
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @moduledoc \"It adds two numbers together\niex> Foo.add(4, 2)\n6\"
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
+    end
+
+    test "formats doctests in moduledocs, lowercase s sigil string" do
+      input =
+        """
+        defmodule Foo do
+          @moduledoc ~s/It adds two numbers together\niex>     Foo.add(4,2)\n6/
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @moduledoc ~s/It adds two numbers together\niex> Foo.add(4, 2)\n6/
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
+    end
+
+    test "formats doctests in moduledocs, uppercase s sigil string" do
+      input =
+        """
+        defmodule Foo do
+          @moduledoc ~S/It adds two numbers together
+                  iex>     Foo.add(4,2)
+                  6
+                /
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @moduledoc ~S/It adds two numbers together
+                  iex> Foo.add(4, 2)
+                  6
+                /
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
+    end
+  end
+
+  # TODO: test string interpolation?
 end
