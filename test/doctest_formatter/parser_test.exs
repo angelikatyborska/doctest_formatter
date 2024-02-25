@@ -130,6 +130,40 @@ defmodule DoctestFormatter.ParserTest do
              ]
     end
 
+    test "a single multi-line doctest with 'iex>' on all lines" do
+      assert parse("iex> 1 +\niex> 2 +\niex> 4\n7") == [
+               %DoctestExpression{
+                 lines: ["1 +", "2 +", "4"],
+                 result: "7",
+                 indentation: {:spaces, 0}
+               }
+             ]
+
+      assert parse("iex>1 +\niex>2 +\niex>4\n7") == [
+               %DoctestExpression{
+                 lines: ["1 +", "2 +", "4"],
+                 result: "7",
+                 indentation: {:spaces, 0}
+               }
+             ]
+
+      assert parse("  iex> 1 +\n  iex> 2 +\n  iex> 4\n  7") == [
+               %DoctestExpression{
+                 lines: ["1 +", "2 +", "4"],
+                 result: "  7",
+                 indentation: {:spaces, 2}
+               }
+             ]
+
+      assert parse("      iex> 1 +\niex> 2 +\n  iex> 4\n  7") == [
+               %DoctestExpression{
+                 lines: ["1 +", "2 +", "4"],
+                 result: "  7",
+                 indentation: {:spaces, 6}
+               }
+             ]
+    end
+
     test "doctests without results" do
       assert parse("    iex> 1 + 2\n") == [
                %DoctestExpression{lines: ["1 + 2"], result: nil, indentation: {:spaces, 4}}

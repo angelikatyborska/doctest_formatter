@@ -293,6 +293,45 @@ defmodule DoctestFormatter.FormatterTest do
       assert output == desired_output
     end
 
+    test "multiline doctest with 'iex>' gets changed to '...>'" do
+      input =
+        """
+        defmodule Foo do
+          @doc \"""
+          It concatenates two strings together
+          iex>  "Fizz"
+          iex>   |> concat( "Buzz" )
+          iex> |>     concat("Barr")
+                   "FizzBuzzBarr"
+          \"""
+          @spec concat(a :: string, b :: string) :: string
+          def concat(a, b) do
+            a <> b
+          end
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @doc \"""
+          It concatenates two strings together
+          iex> "Fizz"
+          ...> |> concat("Buzz")
+          ...> |> concat("Barr")
+          "FizzBuzzBarr"
+          \"""
+          @spec concat(a :: string, b :: string) :: string
+          def concat(a, b) do
+            a <> b
+          end
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
+    end
+
     test "doctest can get split into more lines than originally" do
       input =
         """
