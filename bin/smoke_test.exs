@@ -28,6 +28,7 @@ projects =
 Enum.each(projects, fn project ->
   project_path =
     cond do
+      # Elixir 1.13 has separate test data because of significantly different formatting defaults
       major_version == 1 && minor_version <= 13 ->
         "smoke_test_data/elixir-1-13/#{project}"
 
