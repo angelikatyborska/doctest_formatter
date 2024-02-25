@@ -3,119 +3,212 @@ defmodule DoctestFormatter.FormatterTest do
 
   import DoctestFormatter.Formatter
 
-  # TODO: test that return value is never split into multiple lines
-
   describe "format/2" do
     test "works for empty strings" do
-      assert format("", []) == ""
+      assert format("", []) == "\n"
     end
 
-    test "doesn't do anything when no elixir code" do
+    test "doesn't do anything when no docs and already formatted" do
       input =
         """
-        # Hello, World!
-
-        There is no Elixir code in this document.
-
-        * List item 1
-        * List item 2
-
-        ```js
-        console.log('hello')
-        ```
-
-         - weird
-               - formatting in Markdown
-            - is not this plugin's concern!
+        defmodule Foo do
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
         """
 
       output = format(input, [])
       assert output == input
     end
 
-    test "formats elixir code in code blocks" do
+    test "formats all elixir code because I don't know how not to do it" do
       input =
         """
-        # Hello, World!
+        defmodule Foo do
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a,b) do
+            a+b
+          end
 
-        * List item 1
-        * List item 2
 
-        ```elixir
-              def add(a, b), do:    a+b
-        ```
-
-        ## Goodbye, Mars!
-
-        ~~~~elixir
-        1+2+3+4
-        ~~~~
+        end
         """
 
       desired_output =
         """
-        # Hello, World!
-
-        * List item 1
-        * List item 2
-
-        ```elixir
-        def add(a, b), do: a + b
-        ```
-
-        ## Goodbye, Mars!
-
-        ~~~~elixir
-        1 + 2 + 3 + 4
-        ~~~~
+        defmodule Foo do
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
         """
 
       output = format(input, [])
       assert output == desired_output
     end
 
-    test "ignores non-Elixir code blocks" do
+    test "does not remove comments" do
+      assert format("# foo", []) == "# foo\n"
+    end
+
+    test "keeps only one newline" do
+      assert format("\n\n", []) == "\n"
+    end
+
+    test "formats doctests in docs, multiline string" do
       input =
         """
-        # Hello, World!
+        defmodule Foo do
+          @doc \"""
+          It adds two numbers together
+          iex>     Foo.add(4,2)
+          6
+          \"""
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
 
-        * List item 1
-        * List item 2
-
-        ```plaintext
-              def add(a, b), do:    a+b
-        ```
+      desired_output =
+        """
+        defmodule Foo do
+          @doc \"""
+          It adds two numbers together
+          iex> Foo.add(4, 2)
+          6
+          \"""
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
         """
 
       output = format(input, [])
-      assert output == input
+      assert output == desired_output
+    end
+
+    test "formats doctests in docs, single line string" do
+      input =
+        """
+        defmodule Foo do
+          @doc \"It adds two numbers together\niex>     Foo.add(4,2)\n6\"
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @doc \"It adds two numbers together\niex> Foo.add(4, 2)\n6\"
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
+    end
+
+    test "formats doctests in docs, lowercase s sigil string" do
+      input =
+        """
+        defmodule Foo do
+          @doc ~s/It adds two numbers together\niex>     Foo.add(4,2)\n6/
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @doc ~s/It adds two numbers together\niex> Foo.add(4, 2)\n6/
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
+    end
+
+    test "formats doctests in docs, uppercase s sigil string" do
+      input =
+        """
+        defmodule Foo do
+          @doc ~S/It adds two numbers together
+                  iex>     Foo.add(4,2)
+                  6
+                /
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @doc ~S/It adds two numbers together
+                  iex> Foo.add(4, 2)
+                  6
+                /
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
     end
 
     test "keeps the indent level of the start of the code block" do
       input =
         """
-        - one
-        - two
-            - two and a half:
-              ```elixir
-                    def add a, b do
-                                a + b
-                      end
-              ```
-            - two and three quarters
+        defmodule Foo do
+          @doc \"""
+          It adds two numbers together
+              iex>     Foo.add 4,2
+              6
+          \"""
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
         """
 
       desired_output =
         """
-        - one
-        - two
-            - two and a half:
-              ```elixir
-              def add(a, b) do
-                a + b
-              end
-              ```
-            - two and three quarters
+        defmodule Foo do
+          @doc \"""
+          It adds two numbers together
+              iex> Foo.add(4, 2)
+              6
+          \"""
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
         """
 
       output = format(input, [])
@@ -127,124 +220,356 @@ defmodule DoctestFormatter.FormatterTest do
 
       input =
         """
-        # Hello, World!
-
-        * List item 1
-        * List item 2
-
-        ```elixir
-              def add(a, b), do:    a+b
-
-          def subtract(a, b) do
-          add a, -1*b
+        defmodule Foo do
+          @doc \"""
+          It adds two numbers together
+          iex>   add 4,2
+          6
+          \"""
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
           end
-        ```
+        end
         """
 
       desired_output =
         """
-        # Hello, World!
-
-        * List item 1
-        * List item 2
-
-        ```elixir
-        def add(a, b) do
-          a + b
+        defmodule Foo do
+          @doc \"""
+          It adds two numbers together
+          iex> add 4, 2
+          6
+          \"""
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
         end
-
-        def subtract(a, b) do
-          add a, -1 * b
-        end
-        ```
         """
 
       output = format(input, opts)
       assert output == desired_output
     end
 
-    test "empty lines with whitespace only should keep their whitespace, but not in Elixir" do
+    test "multiline doctest" do
+      opts = []
+
       input =
         """
-        # Hello, World!
-
-        #{"\t\t\t"}
-        #{"    "}
-        ```elixir
-        def add(a, b) do
-          dbg(a)
-
-          dbg(b)
-        #{"\t"}
-          dbg(a + b)
-        #{"  "}
-          a + b
+        defmodule Foo do
+          @doc \"""
+          It concatenates two strings together
+          iex>  "Fizz"
+          ...>   |> concat( "Buzz" )
+          ...> |>     concat("Barr")
+                   "FizzBuzzBarr"
+          \"""
+          @spec concat(a :: string, b :: string) :: string
+          def concat(a, b) do
+            a <> b
+          end
         end
-        ```
         """
 
       desired_output =
         """
-        # Hello, World!
-
-        #{"\t\t\t"}
-        #{"    "}
-        ```elixir
-        def add(a, b) do
-          dbg(a)
-
-          dbg(b)
-
-          dbg(a + b)
-
-          a + b
+        defmodule Foo do
+          @doc \"""
+          It concatenates two strings together
+          iex> "Fizz"
+          ...> |> concat("Buzz")
+          ...> |> concat("Barr")
+          "FizzBuzzBarr"
+          \"""
+          @spec concat(a :: string, b :: string) :: string
+          def concat(a, b) do
+            a <> b
+          end
         end
-        ```
+        """
+
+      output = format(input, opts)
+      assert output == desired_output
+    end
+
+    test "doctest can get split into more lines than originally" do
+      opts = []
+
+      input =
+        """
+        defmodule Foo do
+          @doc \"""
+          It concatenates two strings together
+          iex>  "Fizz" |> concat( "Buzz" ) |>     concat("Barr") |> List.duplicate(3) |> Enum.map(fn word -> String.upcase(word) end)
+                   ["FIZZBUZZBARR", "FIZZBUZZBARR", "FIZZBUZZBARR"]
+          \"""
+          @spec concat(a :: string, b :: string) :: string
+          def concat(a, b) do
+            a <> b
+          end
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @doc \"""
+          It concatenates two strings together
+          iex> "Fizz"
+          ...> |> concat("Buzz")
+          ...> |> concat("Barr")
+          ...> |> List.duplicate(3)
+          ...> |> Enum.map(fn word -> String.upcase(word) end)
+          ["FIZZBUZZBARR", "FIZZBUZZBARR", "FIZZBUZZBARR"]
+          \"""
+          @spec concat(a :: string, b :: string) :: string
+          def concat(a, b) do
+            a <> b
+          end
+        end
+        """
+
+      output = format(input, opts)
+      assert output == desired_output
+    end
+
+    test "expected result always stays a single line" do
+      opts = []
+
+      input =
+        """
+        defmodule Foo do
+          @doc \"""
+          It concatenates two strings together
+          iex>  "Fizz"
+          ...>   |> concat( "Buzz" )
+          ...> |>     concat("Barr")
+          ...> |>     String.duplicate(20)
+                   "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr" <> "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr" <> "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr" <> "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr"
+          \"""
+          @spec concat(a :: string, b :: string) :: string
+          def concat(a, b) do
+            a <> b
+          end
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @doc \"""
+          It concatenates two strings together
+          iex> "Fizz"
+          ...> |> concat("Buzz")
+          ...> |> concat("Barr")
+          ...> |> String.duplicate(20)
+          "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr" <> "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr" <> "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr" <> "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr"
+          \"""
+          @spec concat(a :: string, b :: string) :: string
+          def concat(a, b) do
+            a <> b
+          end
+        end
+        """
+
+      output = format(input, opts)
+      assert output == desired_output
+    end
+
+    test "multiple tests in single doc" do
+      input =
+        """
+        defmodule Foo do
+          @doc \"""
+          iex>   Foo.add(3,4)
+          7
+
+          or
+
+            iex> 3
+            ...>    Foo.add( 7 )
+                10
+          \"""
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @doc \"""
+          iex> Foo.add(3, 4)
+          7
+
+          or
+
+            iex> 3
+            ...> Foo.add(7)
+            10
+          \"""
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
         """
 
       output = format(input, [])
       assert output == desired_output
     end
 
-    test "respects 'disable comments'" do
+    test "multiple docs in a single module" do
       input =
         """
-        # Hello, World!
+        defmodule Foo do
+          @doc \"""
+          iex>   Foo.add(3,4)
+          7
 
-        * List item 1
-        * List item 2
+          or
 
-        [//]: # (elixir-formatter-disable-next-block)
+            iex> 3
+            ...>    Foo.add( 7 )
+                10
+          \"""
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
 
-        ```elixir
-              def add(a, b), do:    a+b
-        ```
+          @doc \"""
+          iex>   Foo.subtract(7,3)
+          4
 
-        ## Goodbye, Mars!
+          or
 
-        ~~~~elixir
-        1+2+3+4
-        ~~~~
+            iex> 10
+            ...>    Foo.subtract( 7 )
+                3
+          \"""
+          @spec subtract(a :: integer, b :: integer) :: integer
+          def subtract(a, b) do
+            a - b
+          end
+        end
         """
 
       desired_output =
         """
-        # Hello, World!
+        defmodule Foo do
+          @doc \"""
+          iex> Foo.add(3, 4)
+          7
 
-        * List item 1
-        * List item 2
+          or
 
-        [//]: # (elixir-formatter-disable-next-block)
+            iex> 3
+            ...> Foo.add(7)
+            10
+          \"""
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
 
-        ```elixir
-              def add(a, b), do:    a+b
-        ```
+          @doc \"""
+          iex> Foo.subtract(7, 3)
+          4
 
-        ## Goodbye, Mars!
+          or
 
-        ~~~~elixir
-        1 + 2 + 3 + 4
-        ~~~~
+            iex> 10
+            ...> Foo.subtract(7)
+            3
+          \"""
+          @spec subtract(a :: integer, b :: integer) :: integer
+          def subtract(a, b) do
+            a - b
+          end
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
+    end
+
+    test "multiple modules" do
+      input =
+        """
+        defmodule Foo do
+          @doc \"""
+          iex>   Foo.add(3,4)
+          7
+
+          or
+
+            iex> 3
+            ...>    Foo.add( 7 )
+                10
+          \"""
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+
+        defmodule Bar do
+          @doc \"""
+          iex>   Bar.subtract(7,3)
+          4
+
+          or
+
+            iex> 10
+            ...>    Bar.subtract( 7 )
+                3
+          \"""
+          @spec subtract(a :: integer, b :: integer) :: integer
+          def subtract(a, b) do
+            a - b
+          end
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @doc \"""
+          iex> Foo.add(3, 4)
+          7
+
+          or
+
+            iex> 3
+            ...> Foo.add(7)
+            10
+          \"""
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+
+        defmodule Bar do
+          @doc \"""
+          iex> Bar.subtract(7, 3)
+          4
+
+          or
+
+            iex> 10
+            ...> Bar.subtract(7)
+            3
+          \"""
+          @spec subtract(a :: integer, b :: integer) :: integer
+          def subtract(a, b) do
+            a - b
+          end
+        end
         """
 
       output = format(input, [])
