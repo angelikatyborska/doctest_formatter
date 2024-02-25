@@ -7,6 +7,8 @@
 
 An Elixir formatter for Elixir code in doctests.
 
+![Running mix format formats your Elixir code in doctests](https://raw.github.com/angelikatyborska/doctest_formatter/main/assets/mix-format.gif)
+
 ## Installation
 
 The package can be installed by adding `doctest_formatter` to your list of dependencies in `mix.exs`:
