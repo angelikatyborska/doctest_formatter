@@ -95,8 +95,11 @@ defmodule DoctestFormatter.Formatter do
       |> Enum.join("\n")
       |> Code.format_string!(opts)
       |> IO.iodata_to_binary()
-      |> Indentation.indent(chunk.indentation)
+      |> String.split("\n")
+      |> Enum.map(fn line ->
+        Indentation.indent(line, chunk.indentation)
+      end)
 
-    formatted_lines ++ [formatted_result]
+    formatted_lines ++ formatted_result
   end
 end

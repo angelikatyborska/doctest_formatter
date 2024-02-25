@@ -415,6 +415,41 @@ defmodule DoctestFormatter.FormatterTest do
       assert output == desired_output
     end
 
+    test "multiline expected result indentation" do
+      input =
+        """
+        defmodule Foo do
+          @doc \"""
+          It concatenates two strings together
+              iex>   ~T[01:02:03]
+              %Time{
+                  hour: 1,
+                  minute: 2,
+                  second: 3
+              }
+          \"""
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @doc \"""
+          It concatenates two strings together
+              iex> ~T[01:02:03]
+              %Time{
+                hour: 1,
+                minute: 2,
+                second: 3
+              }
+          \"""
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
+    end
+
     test "multiple tests in single doc" do
       input =
         """
