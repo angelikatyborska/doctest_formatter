@@ -8,7 +8,7 @@ defmodule DoctestFormatter do
   alias DoctestFormatter.Formatter
 
   def features(_opts) do
-    [sigils: [:M], extensions: [".md", ".markdown"]]
+    [sigils: [], extensions: [".ex"]]
   end
 
   def format(contents, opts) do
