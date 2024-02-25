@@ -31,7 +31,7 @@ defmodule DoctestFormatter.Parser do
             %{acc | in_doctest: false}
 
           {:result, code} ->
-            chunks = update_current_chunk(acc.chunks, fn chunk -> %{chunk | result: code} end)
+            chunks = update_current_chunk(acc.chunks, fn chunk -> %{chunk | result: [code]} end)
             %{acc | in_doctest: false, chunks: chunks}
 
           {:continuation, code} ->

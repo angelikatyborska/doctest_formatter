@@ -91,7 +91,9 @@ defmodule DoctestFormatter.Formatter do
       end)
 
     formatted_result =
-      Code.format_string!(chunk.result, opts)
+      chunk.result
+      |> Enum.join("\n")
+      |> Code.format_string!(opts)
       |> IO.iodata_to_binary()
       |> Indentation.indent(chunk.indentation)
 

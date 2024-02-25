@@ -7,7 +7,7 @@ defmodule DoctestFormatter.DoctestExpression do
 
   @type t :: %__MODULE__{
           lines: [String.t()],
-          result: nil | String.t(),
+          result: nil | [String.t()],
           indentation: Indentation.t()
         }
 end
