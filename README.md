@@ -33,7 +33,7 @@ Then, extend your `.formatter.exs` config file by adding the plugin.
 ]
 ```
 
-Elixir 1.13 or up is required because lower versions do not support formatter plugins.
+Elixir 1.13.2 or up is required. Versions lower than 1.13 do not support formatter plugins, and versions 1.13.0 and 1.13.1 do not support formatter plugins for `.iex` files.
 
 ## Usage
 

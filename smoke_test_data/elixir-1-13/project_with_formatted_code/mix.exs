@@ -1,9 +1,9 @@
-defmodule ProjectWithUnformattedCode.MixProject do
+defmodule ProjectWithFormattedCode.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :project_with_unformatted_code,
+      app: :project_with_formatted_code,
       version: "0.1.0",
       start_permanent: Mix.env() == :prod,
       deps: deps()

@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - elixir: '1.13.0'
+          - elixir: '1.13.2'
             otp: '24.1'
             current_version: false
           - elixir: '1.14.0'
