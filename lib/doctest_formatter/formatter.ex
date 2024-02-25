@@ -90,10 +90,8 @@ defmodule DoctestFormatter.Formatter do
         Indentation.indent(symbol <> line, chunk.indentation)
       end)
 
-    result_opts = Keyword.put(opts, :line_length, :infinity)
-
     formatted_result =
-      Code.format_string!(chunk.result, result_opts)
+      Code.format_string!(chunk.result, opts)
       |> IO.iodata_to_binary()
       |> Indentation.indent(chunk.indentation)
 

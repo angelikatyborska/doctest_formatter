@@ -371,7 +371,7 @@ defmodule DoctestFormatter.FormatterTest do
       assert output == desired_output
     end
 
-    test "expected result always stays a single line" do
+    test "expected result can get split into more lines than originally" do
       input =
         """
         defmodule Foo do
@@ -399,7 +399,10 @@ defmodule DoctestFormatter.FormatterTest do
           ...> |> concat("Buzz")
           ...> |> concat("Barr")
           ...> |> String.duplicate(20)
-          "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr" <> "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr" <> "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr" <> "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr"
+          "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr" <>
+            "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr" <>
+            "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr" <>
+            "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr"
           \"""
           @spec concat(a :: string, b :: string) :: string
           def concat(a, b) do
