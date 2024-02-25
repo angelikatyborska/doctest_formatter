@@ -70,7 +70,7 @@ defmodule DoctestFormatter.Parser do
   end
 
   defp doctest_continuation(line) do
-    case Regex.run(~r/^(\s|\t)*(\.\.\.>)\s?(.*)$/, line) do
+    case Regex.run(~r/^(\s|\t)*((?:(?:\.\.\.)|(?:iex))>)\s?(.*)$/, line) do
       nil ->
         if String.trim(line) === "" do
           nil
@@ -78,7 +78,7 @@ defmodule DoctestFormatter.Parser do
           {:result, line}
         end
 
-      [_, _indentation, "...>", code | _] ->
+      [_, _indentation, symbol, code | _] when symbol in ["iex>", "...>"] ->
         {:continuation, code}
     end
   end
