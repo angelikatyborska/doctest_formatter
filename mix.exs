@@ -32,7 +32,7 @@ defmodule DoctestFormatter.MixProject do
   end
 
   defp description() do
-    "Elixir formatter plugin for formatting Elixir code in Markdown files."
+    "Elixir formatter plugin for formatting Elixir code in doctests."
   end
 
   defp package() do
