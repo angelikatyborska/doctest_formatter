@@ -253,8 +253,6 @@ defmodule DoctestFormatter.FormatterTest do
     end
 
     test "multiline doctest" do
-      opts = []
-
       input =
         """
         defmodule Foo do
@@ -289,13 +287,11 @@ defmodule DoctestFormatter.FormatterTest do
         end
         """
 
-      output = format(input, opts)
+      output = format(input, [])
       assert output == desired_output
     end
 
     test "doctest can get split into more lines than originally" do
-      opts = []
-
       input =
         """
         defmodule Foo do
@@ -330,13 +326,11 @@ defmodule DoctestFormatter.FormatterTest do
         end
         """
 
-      output = format(input, opts)
+      output = format(input, [])
       assert output == desired_output
     end
 
     test "expected result always stays a single line" do
-      opts = []
-
       input =
         """
         defmodule Foo do
@@ -373,7 +367,7 @@ defmodule DoctestFormatter.FormatterTest do
         end
         """
 
-      output = format(input, opts)
+      output = format(input, [])
       assert output == desired_output
     end
 
@@ -573,6 +567,34 @@ defmodule DoctestFormatter.FormatterTest do
         """
 
       output = format(input, [])
+      assert output == desired_output
+    end
+
+    test "adjust desired line length to fit the indentation and 'iex> '" do
+      opts = [line_length: 30]
+
+      input =
+        """
+        defmodule Foo do
+          @doc \"""
+                    iex> "a" <> "a" <> "a"
+                    "aaa"
+          \"""
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @doc \"""
+                    iex> "a" <>
+                    ...>   "a" <> "a"
+                    "aaa"
+          \"""
+        end
+        """
+
+      output = format(input, opts)
       assert output == desired_output
     end
   end

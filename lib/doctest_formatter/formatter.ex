@@ -3,12 +3,12 @@ defmodule DoctestFormatter.Formatter do
 
   alias DoctestFormatter.{Parser, Indentation, OtherContent, DoctestExpression}
 
+  defp default_elixir_line_length, do: 98
+
   @spec format(String.t(), keyword()) :: String.t()
   def format(content, opts) do
     # TODO: can I rely on the default already being set?
     # TODO: I should subtract the indentation level from the default
-    line_length = Keyword.get(opts, :line_length, 98)
-
     to_quoted_opts =
       [
         unescape: false,
@@ -47,7 +47,7 @@ defmodule DoctestFormatter.Formatter do
 
     forms
     |> Code.Formatter.to_algebra(to_algebra_opts)
-    |> Inspect.Algebra.format(line_length)
+    |> Inspect.Algebra.format(default_elixir_line_length())
     |> Kernel.++(["\n"])
     |> IO.iodata_to_binary()
   end
@@ -64,16 +64,24 @@ defmodule DoctestFormatter.Formatter do
   end
 
   def do_format_expression(%DoctestExpression{} = chunk, opts) do
+    first_line_symbol = "iex> "
+    next_line_symbol = "...> "
+
+    desired_line_length = Keyword.get(opts, :line_length, default_elixir_line_length())
+
+    line_length =
+      desired_line_length - elem(chunk.indentation, 1) - String.length(first_line_symbol)
+
     formatted_lines =
       chunk.lines
       |> Enum.join("\n")
-      |> Code.format_string!(opts)
+      |> Code.format_string!(Keyword.put(opts, :line_length, line_length))
       |> IO.iodata_to_binary()
       |> String.split("\n")
       |> Enum.with_index()
       |> Enum.map(fn {line, index} ->
-        symbol = if(index == 0, do: "iex", else: "...")
-        Indentation.indent("#{symbol}> " <> line, chunk.indentation)
+        symbol = if(index == 0, do: first_line_symbol, else: next_line_symbol)
+        Indentation.indent(symbol <> line, chunk.indentation)
       end)
 
     result_opts = Keyword.put(opts, :line_length, :infinity)
