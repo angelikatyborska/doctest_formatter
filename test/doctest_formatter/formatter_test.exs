@@ -371,7 +371,7 @@ defmodule DoctestFormatter.FormatterTest do
       assert output == desired_output
     end
 
-    test "expected result always stays a single line" do
+    test "expected result can get split into more lines than originally" do
       input =
         """
         defmodule Foo do
@@ -399,12 +399,50 @@ defmodule DoctestFormatter.FormatterTest do
           ...> |> concat("Buzz")
           ...> |> concat("Barr")
           ...> |> String.duplicate(20)
-          "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr" <> "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr" <> "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr" <> "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr"
+          "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr" <>
+            "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr" <>
+            "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr" <>
+            "FizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarrFizzBuzzBarr"
           \"""
           @spec concat(a :: string, b :: string) :: string
           def concat(a, b) do
             a <> b
           end
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
+    end
+
+    test "multiline expected result indentation" do
+      input =
+        """
+        defmodule Foo do
+          @doc \"""
+          It concatenates two strings together
+              iex>   ~T[01:02:03]
+              %Time{
+                  hour: 1,
+                  minute: 2,
+                  second: 3
+              }
+          \"""
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @doc \"""
+          It concatenates two strings together
+              iex> ~T[01:02:03]
+              %Time{
+                hour: 1,
+                minute: 2,
+                second: 3
+              }
+          \"""
         end
         """
 

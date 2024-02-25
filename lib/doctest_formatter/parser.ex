@@ -11,6 +11,7 @@ defmodule DoctestFormatter.Parser do
 
     parse_lines(lines, %{
       in_doctest: false,
+      in_doctest_result: false,
       chunks: []
     })
   end
@@ -19,44 +20,103 @@ defmodule DoctestFormatter.Parser do
     acc.chunks
     |> Enum.reverse()
     |> Enum.map(fn content ->
-      %{content | lines: Enum.reverse(content.lines)}
+      content = %{content | lines: Enum.reverse(content.lines)}
+
+      case content do
+        %DoctestExpression{result: result} when is_list(result) ->
+          %{content | result: Enum.reverse(content.result)}
+
+        content ->
+          content
+      end
     end)
   end
 
   defp parse_lines([line | rest], acc) do
     acc =
-      if acc.in_doctest do
-        case doctest_continuation(line) do
-          nil ->
-            %{acc | in_doctest: false}
+      cond do
+        acc.in_doctest && acc.in_doctest_result ->
+          handle_in_doctest_result(line, acc)
 
-          {:result, code} ->
-            chunks = update_current_chunk(acc.chunks, fn chunk -> %{chunk | result: code} end)
-            %{acc | in_doctest: false, chunks: chunks}
+        acc.in_doctest ->
+          handle_in_doctest(line, acc)
 
-          {:continuation, code} ->
-            chunks = append_to_current_chunk(acc.chunks, code)
-            %{acc | chunks: chunks}
-        end
-      else
-        case doctest_start(line) do
-          nil ->
-            chunks =
-              append_to_current_or_new_chunk_of_same_type(acc.chunks, %OtherContent{}, line)
-
-            %{acc | chunks: chunks}
-
-          {:start, code} ->
-            chunks = [
-              %DoctestExpression{indentation: Indentation.detect_indentation(line), lines: [code]}
-              | acc.chunks
-            ]
-
-            %{acc | in_doctest: true, chunks: chunks}
-        end
+        !acc.in_doctest ->
+          handle_not_in_doctest(line, acc)
       end
 
     parse_lines(rest, acc)
+  end
+
+  defp handle_in_doctest_result(line, acc) do
+    cond do
+      empty_line?(line) ->
+        chunks =
+          append_to_current_or_new_chunk_of_same_type(acc.chunks, %OtherContent{}, line)
+
+        %{acc | in_doctest: false, in_doctest_result: false, chunks: chunks}
+
+      start = doctest_start(line) ->
+        {:start, code} = start
+
+        chunks = [
+          %DoctestExpression{
+            indentation: Indentation.detect_indentation(line),
+            lines: [code]
+          }
+          | acc.chunks
+        ]
+
+        %{acc | in_doctest: true, in_doctest_result: false, chunks: chunks}
+
+      true ->
+        # not empty line and not new doctest means it's result continuation
+        chunks =
+          update_current_chunk(acc.chunks, fn chunk ->
+            %{chunk | result: [line | chunk.result]}
+          end)
+
+        %{acc | in_doctest_result: true, chunks: chunks}
+    end
+  end
+
+  defp handle_in_doctest(line, acc) do
+    case doctest_continuation(line) do
+      nil ->
+        chunks =
+          append_to_current_or_new_chunk_of_same_type(acc.chunks, %OtherContent{}, line)
+
+        %{acc | in_doctest: false, chunks: chunks}
+
+      {:result, code} ->
+        chunks = update_current_chunk(acc.chunks, fn chunk -> %{chunk | result: [code]} end)
+        %{acc | in_doctest_result: true, chunks: chunks}
+
+      {:continuation, code} ->
+        chunks = append_to_current_chunk(acc.chunks, code)
+        %{acc | chunks: chunks}
+    end
+  end
+
+  defp handle_not_in_doctest(line, acc) do
+    case doctest_start(line) do
+      nil ->
+        chunks =
+          append_to_current_or_new_chunk_of_same_type(acc.chunks, %OtherContent{}, line)
+
+        %{acc | chunks: chunks}
+
+      {:start, code} ->
+        chunks = [
+          %DoctestExpression{
+            indentation: Indentation.detect_indentation(line),
+            lines: [code]
+          }
+          | acc.chunks
+        ]
+
+        %{acc | in_doctest: true, chunks: chunks}
+    end
   end
 
   defp doctest_start(line) do
@@ -81,6 +141,10 @@ defmodule DoctestFormatter.Parser do
       [_, _indentation, symbol, code | _] when symbol in ["iex>", "...>"] ->
         {:continuation, code}
     end
+  end
+
+  defp empty_line?(line) do
+    String.trim(line) == ""
   end
 
   defp append_to_current_or_new_chunk_of_same_type([], struct, line) do
