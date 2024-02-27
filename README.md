@@ -45,7 +45,6 @@ This formatter plugin will not only format the Elixir code inside the doctest, b
 @doc """
   iex> "Hello, " <>
     iex> "World!"
-    3
 """
 
 # becomes:
@@ -53,7 +52,6 @@ This formatter plugin will not only format the Elixir code inside the doctest, b
 @doc """
   iex> "Hello, " <>
   ...>   "World!"
-  3
 """
 ```
 
