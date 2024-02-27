@@ -90,16 +90,31 @@ defmodule DoctestFormatter.Formatter do
         Indentation.indent(symbol <> line, chunk.indentation)
       end)
 
-    formatted_result =
+    string_result =
       chunk.result
       |> Enum.join("\n")
-      |> Code.format_string!(opts)
-      |> IO.iodata_to_binary()
+
+    string_result =
+      if exception_result?(string_result) do
+        string_result
+        |> String.trim()
+      else
+        string_result
+        |> Code.format_string!(opts)
+        |> IO.iodata_to_binary()
+      end
+
+    formatted_result =
+      string_result
       |> String.split("\n")
       |> Enum.map(fn line ->
         Indentation.indent(line, chunk.indentation)
       end)
 
     formatted_lines ++ formatted_result
+  end
+
+  defp exception_result?(string) do
+    string |> String.trim() |> String.starts_with?("** (")
   end
 end

@@ -676,6 +676,35 @@ defmodule DoctestFormatter.FormatterTest do
       output = format(input, opts)
       assert output == desired_output
     end
+
+    test "can handle exceptions in results" do
+      input =
+        """
+        defmodule Foo do
+          @doc \"""
+          iex>  "Fizz"
+          iex>   |> Kernel.<>( "Buzz" )
+          iex> |>     Kernel.<>(nil)
+                   ** (ArgumentError) expected binary argument in <> operator but got: nil
+          \"""
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @doc \"""
+          iex> "Fizz"
+          ...> |> Kernel.<>("Buzz")
+          ...> |> Kernel.<>(nil)
+          ** (ArgumentError) expected binary argument in <> operator but got: nil
+          \"""
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
+    end
   end
 
   describe "format/2 on @moduledocs" do

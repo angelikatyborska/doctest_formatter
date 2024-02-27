@@ -18,6 +18,9 @@ defmodule ProjectWithFormattedCode do
       ...> |> ProjectWithFormattedCode.add(2)
       3
 
+      iex> 3 + "3"
+      ** (ArithmeticError) bad argument in arithmetic expression
+
   """
   def add(a, b) do
     a + b
