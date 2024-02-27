@@ -80,6 +80,9 @@ jobs:
       - name: Run smoke tests
         run: elixir ./bin/smoke_test.exs
 
+      - name: Check for compilation warnings
+        run: mix compile --force --no-warnings
+
       - name: Run Dialyzer
         run: mix dialyzer
         if: ${{ matrix.current_version }}
