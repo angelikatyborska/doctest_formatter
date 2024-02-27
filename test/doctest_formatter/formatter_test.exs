@@ -649,7 +649,7 @@ defmodule DoctestFormatter.FormatterTest do
       assert output == desired_output
     end
 
-    test "adjust desired line length to fit the indentation and 'iex> '" do
+    test "adjust desired test code line length to fit the indentation and 'iex> '" do
       opts = [line_length: 30]
 
       input =
@@ -669,6 +669,34 @@ defmodule DoctestFormatter.FormatterTest do
                     iex> "a" <>
                     ...>   "a" <> "a"
                     "aaa"
+          \"""
+        end
+        """
+
+      output = format(input, opts)
+      assert output == desired_output
+    end
+
+    test "adjust desired result line length to fit the indentation" do
+      opts = [line_length: 30]
+
+      input =
+        """
+        defmodule Foo do
+          @doc \"""
+                        iex> "aaa"
+                        "a" <> "a" <> "a"
+          \"""
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @doc \"""
+                        iex> "aaa"
+                        "a" <>
+                          "a" <> "a"
           \"""
         end
         """

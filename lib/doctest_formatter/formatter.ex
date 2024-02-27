@@ -70,6 +70,10 @@ defmodule DoctestFormatter.Formatter do
   end
 
   def do_format_expression(%DoctestExpression{} = chunk, opts) do
+    format_lines(chunk, opts) ++ format_result(chunk, opts)
+  end
+
+  defp format_lines(chunk, opts) do
     first_line_symbol = "iex> "
     next_line_symbol = "...> "
 
@@ -78,17 +82,25 @@ defmodule DoctestFormatter.Formatter do
     line_length =
       desired_line_length - elem(chunk.indentation, 1) - String.length(first_line_symbol)
 
-    formatted_lines =
-      chunk.lines
-      |> Enum.join("\n")
-      |> Code.format_string!(Keyword.put(opts, :line_length, line_length))
-      |> IO.iodata_to_binary()
-      |> String.split("\n")
-      |> Enum.with_index()
-      |> Enum.map(fn {line, index} ->
-        symbol = if(index == 0, do: first_line_symbol, else: next_line_symbol)
-        Indentation.indent(symbol <> line, chunk.indentation)
-      end)
+    opts = Keyword.put(opts, :line_length, line_length)
+
+    chunk.lines
+    |> Enum.join("\n")
+    |> Code.format_string!(opts)
+    |> IO.iodata_to_binary()
+    |> String.split("\n")
+    |> Enum.with_index()
+    |> Enum.map(fn {line, index} ->
+      symbol = if(index == 0, do: first_line_symbol, else: next_line_symbol)
+      Indentation.indent(symbol <> line, chunk.indentation)
+    end)
+  end
+
+  defp format_result(chunk, opts) do
+    desired_line_length = Keyword.get(opts, :line_length, default_elixir_line_length())
+
+    line_length = desired_line_length - elem(chunk.indentation, 1)
+    opts = Keyword.put(opts, :line_length, line_length)
 
     string_result =
       chunk.result
@@ -104,14 +116,11 @@ defmodule DoctestFormatter.Formatter do
         |> IO.iodata_to_binary()
       end
 
-    formatted_result =
-      string_result
-      |> String.split("\n")
-      |> Enum.map(fn line ->
-        Indentation.indent(line, chunk.indentation)
-      end)
-
-    formatted_lines ++ formatted_result
+    string_result
+    |> String.split("\n")
+    |> Enum.map(fn line ->
+      Indentation.indent(line, chunk.indentation)
+    end)
   end
 
   defp exception_result?(string) do
