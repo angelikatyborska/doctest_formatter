@@ -84,17 +84,16 @@ defmodule DoctestFormatter.Formatter do
 
     opts = Keyword.put(opts, :line_length, line_length)
 
-    formatted_lines =
-      chunk.lines
-      |> Enum.join("\n")
-      |> Code.format_string!(opts)
-      |> IO.iodata_to_binary()
-      |> String.split("\n")
-      |> Enum.with_index()
-      |> Enum.map(fn {line, index} ->
-        symbol = if(index == 0, do: first_line_symbol, else: next_line_symbol)
-        Indentation.indent(symbol <> line, chunk.indentation)
-      end)
+    chunk.lines
+    |> Enum.join("\n")
+    |> Code.format_string!(opts)
+    |> IO.iodata_to_binary()
+    |> String.split("\n")
+    |> Enum.with_index()
+    |> Enum.map(fn {line, index} ->
+      symbol = if(index == 0, do: first_line_symbol, else: next_line_symbol)
+      Indentation.indent(symbol <> line, chunk.indentation)
+    end)
   end
 
   defp format_result(chunk, opts) do
