@@ -39,6 +39,24 @@ Elixir 1.13.2 or up is required. Versions lower than 1.13 do not support formatt
 
 Run `mix format`.
 
+This formatter plugin will not only format the Elixir code inside the doctest, but it will format the test's `iex>` prompt as well. It will always use `iex>` for the first line of the test, and `...>` for each next line. For example:
+
+```elixir
+@doc """
+  iex> "Hello, " <>
+    iex> "World!"
+    3
+"""
+
+# becomes:
+
+@doc """
+  iex> "Hello, " <>
+  ...>   "World!"
+  3
+"""
+```
+
 ## Known limitations
 
 ### Dynamic value
