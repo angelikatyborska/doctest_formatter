@@ -254,6 +254,31 @@ defmodule DoctestFormatter.FormatterTest do
       assert output == desired_output
     end
 
+    test "keeps line number in iex>() prompt" do
+      input =
+        """
+        defmodule Foo do
+          @doc \"""
+          iex(4)>   add 4,2
+          6
+          \"""
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @doc \"""
+          iex(4)> add(4, 2)
+          6
+          \"""
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
+    end
+
     test "multiline doctest" do
       input =
         """
@@ -325,6 +350,35 @@ defmodule DoctestFormatter.FormatterTest do
           def concat(a, b) do
             a <> b
           end
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
+    end
+
+    test "multiline doctest with 'iex(n)>' gets changed to '...(n)>'" do
+      input =
+        """
+        defmodule Foo do
+          @doc \"""
+          iex(3)>  "Fizz"
+          iex()>   |> concat( "Buzz" )
+          iex()> |>     concat("Barr")
+                   "FizzBuzzBarr"
+          \"""
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @doc \"""
+          iex(3)> "Fizz"
+          ...(3)> |> concat("Buzz")
+          ...(3)> |> concat("Barr")
+          "FizzBuzzBarr"
+          \"""
         end
         """
 

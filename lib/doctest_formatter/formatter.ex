@@ -74,13 +74,10 @@ defmodule DoctestFormatter.Formatter do
   end
 
   defp format_lines(chunk, opts) do
-    first_line_symbol = "iex> "
-    next_line_symbol = "...> "
-
     desired_line_length = Keyword.get(opts, :line_length, default_elixir_line_length())
 
     line_length =
-      desired_line_length - elem(chunk.indentation, 1) - String.length(first_line_symbol)
+      desired_line_length - elem(chunk.indentation, 1) - String.length(get_prompt(chunk, 0))
 
     opts = Keyword.put(opts, :line_length, line_length)
 
@@ -91,8 +88,7 @@ defmodule DoctestFormatter.Formatter do
     |> String.split("\n")
     |> Enum.with_index()
     |> Enum.map(fn {line, index} ->
-      symbol = if(index == 0, do: first_line_symbol, else: next_line_symbol)
-      Indentation.indent(symbol <> line, chunk.indentation)
+      Indentation.indent(get_prompt(chunk, index) <> line, chunk.indentation)
     end)
   end
 
@@ -125,5 +121,23 @@ defmodule DoctestFormatter.Formatter do
 
   defp exception_result?(string) do
     string |> String.trim() |> String.starts_with?("** (")
+  end
+
+  defp get_prompt(chunk, line_index) do
+    iex_line_number =
+      if chunk.iex_line_number do
+        "(#{chunk.iex_line_number})"
+      else
+        ""
+      end
+
+    prompt_text =
+      if line_index == 0 do
+        "iex"
+      else
+        "..."
+      end
+
+    "#{prompt_text}#{iex_line_number}> "
   end
 end

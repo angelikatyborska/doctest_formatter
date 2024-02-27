@@ -339,5 +339,72 @@ defmodule DoctestFormatter.ParserTest do
                %OtherContent{lines: ["foo", ""]}
              ]
     end
+
+    test "with iex(n)>" do
+      assert parse("    iex(3)> 1 + 2\n3") == [
+               %DoctestExpression{
+                 lines: ["1 + 2"],
+                 result: ["3"],
+                 iex_line_number: 3,
+                 indentation: {:spaces, 4}
+               }
+             ]
+
+      assert parse("iex(14)> 1 +\niex(2)> 2\n3") == [
+               %DoctestExpression{
+                 lines: ["1 +", "2"],
+                 result: ["3"],
+                 iex_line_number: 14,
+                 indentation: {:spaces, 0}
+               }
+             ]
+
+      assert parse("iex(6)> 1 +\n...(6)> 2\n3") == [
+               %DoctestExpression{
+                 lines: ["1 +", "2"],
+                 result: ["3"],
+                 iex_line_number: 6,
+                 indentation: {:spaces, 0}
+               }
+             ]
+
+      assert parse("  iex(6)> 1 +\n  ...(7)> 2\n3") == [
+               %DoctestExpression{
+                 lines: ["1 +", "2"],
+                 result: ["3"],
+                 iex_line_number: 6,
+                 indentation: {:spaces, 2}
+               }
+             ]
+    end
+
+    test "iex()> counts as no line number" do
+      assert parse("iex()> 1 + 2\n3") == [
+               %DoctestExpression{
+                 lines: ["1 + 2"],
+                 result: ["3"],
+                 iex_line_number: nil,
+                 indentation: {:spaces, 0}
+               }
+             ]
+
+      assert parse("  iex()> 1 +\n  iex()> 2\n3") == [
+               %DoctestExpression{
+                 lines: ["1 +", "2"],
+                 result: ["3"],
+                 iex_line_number: nil,
+                 indentation: {:spaces, 2}
+               }
+             ]
+
+      assert parse("iex()> 1 +\n...()> 2\n3") == [
+               %DoctestExpression{
+                 lines: ["1 +", "2"],
+                 result: ["3"],
+                 iex_line_number: nil,
+                 indentation: {:spaces, 0}
+               }
+             ]
+    end
   end
 end
