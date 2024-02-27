@@ -57,12 +57,13 @@ defmodule DoctestFormatter.Parser do
         %{acc | in_doctest: false, in_doctest_result: false, chunks: chunks}
 
       start = doctest_start(line) ->
-        {:start, code} = start
+        {:start, code, iex_line_number} = start
 
         chunks = [
           %DoctestExpression{
             indentation: Indentation.detect_indentation(line),
-            lines: [code]
+            lines: [code],
+            iex_line_number: iex_line_number
           }
           | acc.chunks
         ]
@@ -106,11 +107,12 @@ defmodule DoctestFormatter.Parser do
 
         %{acc | chunks: chunks}
 
-      {:start, code} ->
+      {:start, code, iex_line_number} ->
         chunks = [
           %DoctestExpression{
             indentation: Indentation.detect_indentation(line),
-            lines: [code]
+            lines: [code],
+            iex_line_number: iex_line_number
           }
           | acc.chunks
         ]
@@ -120,17 +122,40 @@ defmodule DoctestFormatter.Parser do
   end
 
   defp doctest_start(line) do
-    case Regex.run(~r/^(\s|\t)*(iex>)\s?(.*)$/, line) do
+    # example matches:
+    # iex> foo
+    # iex>foo
+    # iex()> foo
+    #   iex(43)> foo
+    case Regex.run(~r/^(\s|\t)*(?:iex(?:\((\d*)\))*>)\s?(.*)$/, line) do
       nil ->
         nil
 
-      [_, _indentation, "iex>", code | _] ->
-        {:start, code}
+      [_, _indentation, iex_line_number, code | _] ->
+        iex_line_number =
+          case iex_line_number do
+            "" ->
+              nil
+
+            _ ->
+              String.to_integer(iex_line_number)
+          end
+
+        {:start, code, iex_line_number}
     end
   end
 
   defp doctest_continuation(line) do
-    case Regex.run(~r/^(\s|\t)*((?:(?:\.\.\.)|(?:iex))>)\s?(.*)$/, line) do
+    # example matches:
+    # iex> foo
+    # iex>foo
+    # iex()> foo
+    # iex(43)> foo
+    # ...> foo
+    # ...()> foo
+    # ...(1)> foo
+    #     ...(1)> foo
+    case Regex.run(~r/^(\s|\t)*(?:(?:(?:\.\.\.)|(?:iex))(?:\(\d*\))*>)\s?(.*)$/, line) do
       nil ->
         if String.trim(line) === "" do
           nil
@@ -138,7 +163,7 @@ defmodule DoctestFormatter.Parser do
           {:result, line}
         end
 
-      [_, _indentation, symbol, code | _] when symbol in ["iex>", "...>"] ->
+      [_, _indentation, code | _] ->
         {:continuation, code}
     end
   end

@@ -3,11 +3,12 @@ defmodule DoctestFormatter.DoctestExpression do
 
   alias DoctestFormatter.Indentation
 
-  defstruct([:lines, :result, :indentation])
+  defstruct([:lines, :result, :indentation, :iex_line_number])
 
   @type t :: %__MODULE__{
           lines: [String.t()],
           result: nil | [String.t()],
-          indentation: Indentation.t()
+          indentation: Indentation.t(),
+          iex_line_number: nil | pos_integer()
         }
 end
