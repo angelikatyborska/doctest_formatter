@@ -4,7 +4,7 @@ defmodule DoctestFormatter.MixProject do
   def project do
     [
       app: :doctest_formatter,
-      version: "0.1.0",
+      version: "0.2.0",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       name: "Doctest Formatter",
