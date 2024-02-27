@@ -6,6 +6,7 @@
 - Fix implementation for multiline results. Multiline results are allowed, and they can be terminated with an empty new line or another doctest.
 - Support exception expressions (`** (ModuleName) message`) in results.
 - Desired line length for doctest result now accounts for its indentation.
+- Support doctests with iex prompts with a line number, e.g.: `iex(1)>`.
 
 ## 0.1.0 (2024-02-25)
 
