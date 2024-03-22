@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.1 (2024-03-22)
 
 - Do not crash if doctest has no expected result.
 
