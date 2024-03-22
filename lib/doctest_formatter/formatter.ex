@@ -7,8 +7,6 @@ defmodule DoctestFormatter.Formatter do
 
   @spec format(String.t(), keyword()) :: String.t()
   def format(content, opts) do
-    # TODO: can I rely on the default already being set?
-    # TODO: I should subtract the indentation level from the default
     to_quoted_opts =
       [
         unescape: false,
@@ -67,6 +65,10 @@ defmodule DoctestFormatter.Formatter do
       end
     end)
     |> Enum.join("\n")
+  end
+
+  def do_format_expression(%DoctestExpression{result: nil} = chunk, opts) do
+    format_lines(chunk, opts)
   end
 
   def do_format_expression(%DoctestExpression{} = chunk, opts) do

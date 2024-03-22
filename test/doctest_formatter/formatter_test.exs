@@ -279,6 +279,39 @@ defmodule DoctestFormatter.FormatterTest do
       assert output == desired_output
     end
 
+    test "doctests with no expected result" do
+      input =
+        """
+        defmodule Foo do
+          @doc \"""
+          It concatenates two strings together
+          iex>    concat("Fizz","Buzz")
+          \"""
+          @spec concat(a :: string, b :: string) :: string
+          def concat(a, b) do
+            a <> b
+          end
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @doc \"""
+          It concatenates two strings together
+          iex> concat("Fizz", "Buzz")
+          \"""
+          @spec concat(a :: string, b :: string) :: string
+          def concat(a, b) do
+            a <> b
+          end
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
+    end
+
     test "multiline doctest" do
       input =
         """
@@ -306,6 +339,47 @@ defmodule DoctestFormatter.FormatterTest do
           ...> |> concat("Buzz")
           ...> |> concat("Barr")
           "FizzBuzzBarr"
+          \"""
+          @spec concat(a :: string, b :: string) :: string
+          def concat(a, b) do
+            a <> b
+          end
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
+    end
+
+    test "multiline doctest with no expected result" do
+      input =
+        """
+        defmodule Foo do
+          @doc \"""
+          It concatenates two strings together
+          iex>  "Fizz"
+          ...>   |> concat( "Buzz" )
+          ...> |>     concat("Barr")
+
+          Bla bla
+          \"""
+          @spec concat(a :: string, b :: string) :: string
+          def concat(a, b) do
+            a <> b
+          end
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @doc \"""
+          It concatenates two strings together
+          iex> "Fizz"
+          ...> |> concat("Buzz")
+          ...> |> concat("Barr")
+
+          Bla bla
           \"""
           @spec concat(a :: string, b :: string) :: string
           def concat(a, b) do
