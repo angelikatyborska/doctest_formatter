@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Do not crash if doctest has no expected result.
+
 ## 0.2.0 (2024-02-27)
 
 - Support parsing multiline doctests with `iex>` on all lines, but reformat them using `...>` on every line but the first one.
