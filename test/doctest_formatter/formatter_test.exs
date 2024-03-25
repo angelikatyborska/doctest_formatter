@@ -1117,4 +1117,18 @@ defmodule DoctestFormatter.FormatterTest do
       assert output == desired_output
     end
   end
+
+  describe "format/2 on content loaded from file" do
+    # bring to light bugs that might be hidden because of inline-heredoc-string-code formatting, like in the above test files
+    test "escaped quotes" do
+      input =
+        File.read!(Path.join(__DIR__, "../fixtures/escaped_quotes.ex"))
+
+      desired_output =
+        File.read!(Path.join(__DIR__, "../fixtures/escaped_quotes_desired_output.ex"))
+
+      output = format(input, [])
+      assert output == desired_output
+    end
+  end
 end
