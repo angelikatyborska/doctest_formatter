@@ -3,5 +3,6 @@ defmodule EscapedQuotes do
        iex> %{
        ...>   data:    "{\\"supply\\": 100}"
        ...> }
+       %{data:    "{\\"supply\\": 100}"}
   """
 end

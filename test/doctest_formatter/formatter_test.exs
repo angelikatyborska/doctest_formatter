@@ -1000,6 +1000,7 @@ defmodule DoctestFormatter.FormatterTest do
                iex> %{
                ...>   data: "{\\"supply\\": 100}"
                ...> }
+               %{data: "{\\"supply\\": 100}"}
           \"""
         end
         """

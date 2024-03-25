@@ -111,6 +111,7 @@ defmodule DoctestFormatter.Formatter do
         |> String.trim()
       else
         string_result
+        |> Macro.unescape_string()
         |> Code.format_string!(opts)
         |> IO.iodata_to_binary()
       end
