@@ -994,16 +994,7 @@ defmodule DoctestFormatter.FormatterTest do
         File.read!(Path.join(__DIR__, "../fixtures/escaped_quotes.ex"))
 
       desired_output =
-        """
-        defmodule EscapedQuotes do
-          @doc \"""
-               iex> %{
-               ...>   data: "{\\"supply\\": 100}"
-               ...> }
-               %{data: "{\\"supply\\": 100}"}
-          \"""
-        end
-        """
+        File.read!(Path.join(__DIR__, "../fixtures/escaped_quotes_desired_output.ex"))
 
       output = format(input, [])
       assert output == desired_output
