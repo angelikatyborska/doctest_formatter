@@ -2,7 +2,7 @@ defmodule ProjectWithUnformattedCode do
   @moduledoc """
   Documentation for `ProjectWithUnformattedCode`.
 
-  iex> ProjectWithFormattedCode.add(5,5)
+  iex> ProjectWithUnformattedCode.add(5,5)
   10
   """
 
@@ -16,7 +16,7 @@ defmodule ProjectWithUnformattedCode do
 
       iex> 1
       ...>   |> ProjectWithUnformattedCode.add(2)
-          3
+      3
 
   """
   def add(a, b) do
