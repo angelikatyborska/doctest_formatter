@@ -987,5 +987,25 @@ defmodule DoctestFormatter.FormatterTest do
     end
   end
 
-  # TODO: test string interpolation?
+  describe "format/2 on content loaded from file" do
+    # bring to light bugs that might be hidden because of inline-heredoc-string-code formatting, like in the above test files
+    test "escaped quotes" do
+      input =
+        File.read!(Path.join(__DIR__, "../fixtures/escaped_quotes.ex"))
+
+      desired_output =
+        """
+        defmodule EscapedQuotes do
+          @doc \"""
+               iex> %{
+               ...>   data: "{\\"supply\\": 100}"
+               ...> }
+          \"""
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
+    end
+  end
 end
