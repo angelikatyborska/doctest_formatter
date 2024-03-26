@@ -861,6 +861,77 @@ defmodule DoctestFormatter.FormatterTest do
       output = format(input, [])
       assert output == desired_output
     end
+
+    test "different integer formats" do
+      input =
+        """
+        defmodule IntegerFormats do
+          @doc \"""
+            iex> ?A
+            0x41
+
+            iex> 0b1000001
+            65
+
+            iex> 0x00
+            0b00
+
+            iex> [?A, ?B, ?C]
+            'ABC'
+
+            iex> []
+            ''
+
+            iex> [0b1000001, 0b1000010, 0b1000011]
+            ~c"ABC"
+          \"""
+
+          def func do
+            [?A, ?B, ?C]
+            [0x41, 0x42, 0x43]
+            [0b1000001, 0b1000010, 0b1000011]
+            'ABC'
+            ~c"ABC"
+          end
+        end
+        """
+
+      desired_output =
+        """
+        defmodule IntegerFormats do
+          @doc \"""
+            iex> ?A
+            0x41
+
+            iex> 0b1000001
+            65
+
+            iex> 0x00
+            0b00
+
+            iex> [?A, ?B, ?C]
+            ~c"ABC"
+
+            iex> []
+            ~c""
+
+            iex> [0b1000001, 0b1000010, 0b1000011]
+            ~c"ABC"
+          \"""
+
+          def func do
+            [?A, ?B, ?C]
+            [0x41, 0x42, 0x43]
+            [0b1000001, 0b1000010, 0b1000011]
+            ~c"ABC"
+            ~c"ABC"
+          end
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
+    end
   end
 
   describe "format/2 on @moduledocs" do
@@ -986,6 +1057,4 @@ defmodule DoctestFormatter.FormatterTest do
       assert output == desired_output
     end
   end
-
-  # TODO: test string interpolation?
 end
