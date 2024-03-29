@@ -46,7 +46,6 @@ Enum.each(projects, fn project ->
   {_, 0} = System.cmd("mix", ["format"], cd: project_path)
   {diff, 0} = System.cmd("git", ["diff"], cd: project_path)
 
-
   expected_diff = File.read!("#{project_path}/expected_diff.diff")
 
   :code.delete(ExpectedDiff)
