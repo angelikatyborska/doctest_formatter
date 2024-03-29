@@ -181,15 +181,17 @@ defmodule DoctestFormatter.FormatterTest do
       output = format(input, [])
       assert output == desired_output
     end
+  end
 
-    test "keeps the indent level of the start of the code block" do
+  describe "format/2 on @moduledocs" do
+    test "formats doctests in moduledocs, multiline string" do
       input =
         """
         defmodule Foo do
-          @doc \"""
+          @moduledoc \"""
           It adds two numbers together
-              iex>     Foo.add 4,2
-              6
+          iex>     Foo.add(4,2)
+          6
           \"""
           @spec add(a :: integer, b :: integer) :: integer
           def add(a, b) do
@@ -201,10 +203,10 @@ defmodule DoctestFormatter.FormatterTest do
       desired_output =
         """
         defmodule Foo do
-          @doc \"""
+          @moduledoc \"""
           It adds two numbers together
-              iex> Foo.add(4, 2)
-              6
+          iex> Foo.add(4, 2)
+          6
           \"""
           @spec add(a :: integer, b :: integer) :: integer
           def add(a, b) do
@@ -217,6 +219,95 @@ defmodule DoctestFormatter.FormatterTest do
       assert output == desired_output
     end
 
+    test "formats doctests in moduledocs, single line string" do
+      input =
+        """
+        defmodule Foo do
+          @moduledoc \"It adds two numbers together\niex>     Foo.add(4,2)\n6\"
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @moduledoc \"It adds two numbers together\niex> Foo.add(4, 2)\n6\"
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
+    end
+
+    test "formats doctests in moduledocs, lowercase s sigil string" do
+      input =
+        """
+        defmodule Foo do
+          @moduledoc ~s/It adds two numbers together\niex>     Foo.add(4,2)\n6/
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @moduledoc ~s/It adds two numbers together\niex> Foo.add(4, 2)\n6/
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
+    end
+
+    test "formats doctests in moduledocs, uppercase s sigil string" do
+      input =
+        """
+        defmodule Foo do
+          @moduledoc ~S/It adds two numbers together
+                  iex>     Foo.add(4,2)
+                  6
+                /
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @moduledoc ~S/It adds two numbers together
+                  iex> Foo.add(4, 2)
+                  6
+                /
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
+    end
+  end
+
+  describe "format/2 on single line doctests" do
     test "respects formatter options" do
       opts = [locals_without_parens: [add: 2], force_do_end_blocks: true]
 
@@ -251,6 +342,77 @@ defmodule DoctestFormatter.FormatterTest do
         """
 
       output = format(input, opts)
+      assert output == desired_output
+    end
+
+    test "different integer formats" do
+      input =
+        """
+        defmodule IntegerFormats do
+          @doc \"""
+            iex> ?A
+            0x41
+
+            iex> 0b1000001
+            65
+
+            iex> 0x00
+            0b00
+
+            iex> [?A, ?B, ?C]
+            'ABC'
+
+            iex> []
+            ''
+
+            iex> [0b1000001, 0b1000010, 0b1000011]
+            ~c"ABC"
+          \"""
+
+          def func do
+            [?A, ?B, ?C]
+            [0x41, 0x42, 0x43]
+            [0b1000001, 0b1000010, 0b1000011]
+            'ABC'
+            ~c"ABC"
+          end
+        end
+        """
+
+      desired_output =
+        """
+        defmodule IntegerFormats do
+          @doc \"""
+            iex> ?A
+            0x41
+
+            iex> 0b1000001
+            65
+
+            iex> 0x00
+            0b00
+
+            iex> [?A, ?B, ?C]
+            ~c"ABC"
+
+            iex> []
+            ~c""
+
+            iex> [0b1000001, 0b1000010, 0b1000011]
+            ~c"ABC"
+          \"""
+
+          def func do
+            [?A, ?B, ?C]
+            [0x41, 0x42, 0x43]
+            [0b1000001, 0b1000010, 0b1000011]
+            ~c"ABC"
+            ~c"ABC"
+          end
+        end
+        """
+
+      output = format(input, [])
       assert output == desired_output
     end
 
@@ -311,7 +473,9 @@ defmodule DoctestFormatter.FormatterTest do
       output = format(input, [])
       assert output == desired_output
     end
+  end
 
+  describe "format/2 on multiline doctests" do
     test "multiline doctest" do
       input =
         """
@@ -535,6 +699,43 @@ defmodule DoctestFormatter.FormatterTest do
           @spec concat(a :: string, b :: string) :: string
           def concat(a, b) do
             a <> b
+          end
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
+    end
+  end
+
+  describe "format/2 indentation" do
+    test "keeps the indent level of the start of the code block" do
+      input =
+        """
+        defmodule Foo do
+          @doc \"""
+          It adds two numbers together
+              iex>     Foo.add 4,2
+              6
+          \"""
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @doc \"""
+          It adds two numbers together
+              iex> Foo.add(4, 2)
+              6
+          \"""
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
           end
         end
         """
@@ -832,7 +1033,9 @@ defmodule DoctestFormatter.FormatterTest do
       output = format(input, opts)
       assert output == desired_output
     end
+  end
 
+  describe "format/2 on exceptions" do
     test "can handle exceptions in results" do
       input =
         """
@@ -855,201 +1058,6 @@ defmodule DoctestFormatter.FormatterTest do
           ...> |> Kernel.<>(nil)
           ** (ArgumentError) expected binary argument in <> operator but got: nil
           \"""
-        end
-        """
-
-      output = format(input, [])
-      assert output == desired_output
-    end
-
-    test "different integer formats" do
-      input =
-        """
-        defmodule IntegerFormats do
-          @doc \"""
-            iex> ?A
-            0x41
-
-            iex> 0b1000001
-            65
-
-            iex> 0x00
-            0b00
-
-            iex> [?A, ?B, ?C]
-            'ABC'
-
-            iex> []
-            ''
-
-            iex> [0b1000001, 0b1000010, 0b1000011]
-            ~c"ABC"
-          \"""
-
-          def func do
-            [?A, ?B, ?C]
-            [0x41, 0x42, 0x43]
-            [0b1000001, 0b1000010, 0b1000011]
-            'ABC'
-            ~c"ABC"
-          end
-        end
-        """
-
-      desired_output =
-        """
-        defmodule IntegerFormats do
-          @doc \"""
-            iex> ?A
-            0x41
-
-            iex> 0b1000001
-            65
-
-            iex> 0x00
-            0b00
-
-            iex> [?A, ?B, ?C]
-            ~c"ABC"
-
-            iex> []
-            ~c""
-
-            iex> [0b1000001, 0b1000010, 0b1000011]
-            ~c"ABC"
-          \"""
-
-          def func do
-            [?A, ?B, ?C]
-            [0x41, 0x42, 0x43]
-            [0b1000001, 0b1000010, 0b1000011]
-            ~c"ABC"
-            ~c"ABC"
-          end
-        end
-        """
-
-      output = format(input, [])
-      assert output == desired_output
-    end
-  end
-
-  describe "format/2 on @moduledocs" do
-    test "formats doctests in moduledocs, multiline string" do
-      input =
-        """
-        defmodule Foo do
-          @moduledoc \"""
-          It adds two numbers together
-          iex>     Foo.add(4,2)
-          6
-          \"""
-          @spec add(a :: integer, b :: integer) :: integer
-          def add(a, b) do
-            a + b
-          end
-        end
-        """
-
-      desired_output =
-        """
-        defmodule Foo do
-          @moduledoc \"""
-          It adds two numbers together
-          iex> Foo.add(4, 2)
-          6
-          \"""
-          @spec add(a :: integer, b :: integer) :: integer
-          def add(a, b) do
-            a + b
-          end
-        end
-        """
-
-      output = format(input, [])
-      assert output == desired_output
-    end
-
-    test "formats doctests in moduledocs, single line string" do
-      input =
-        """
-        defmodule Foo do
-          @moduledoc \"It adds two numbers together\niex>     Foo.add(4,2)\n6\"
-          @spec add(a :: integer, b :: integer) :: integer
-          def add(a, b) do
-            a + b
-          end
-        end
-        """
-
-      desired_output =
-        """
-        defmodule Foo do
-          @moduledoc \"It adds two numbers together\niex> Foo.add(4, 2)\n6\"
-          @spec add(a :: integer, b :: integer) :: integer
-          def add(a, b) do
-            a + b
-          end
-        end
-        """
-
-      output = format(input, [])
-      assert output == desired_output
-    end
-
-    test "formats doctests in moduledocs, lowercase s sigil string" do
-      input =
-        """
-        defmodule Foo do
-          @moduledoc ~s/It adds two numbers together\niex>     Foo.add(4,2)\n6/
-          @spec add(a :: integer, b :: integer) :: integer
-          def add(a, b) do
-            a + b
-          end
-        end
-        """
-
-      desired_output =
-        """
-        defmodule Foo do
-          @moduledoc ~s/It adds two numbers together\niex> Foo.add(4, 2)\n6/
-          @spec add(a :: integer, b :: integer) :: integer
-          def add(a, b) do
-            a + b
-          end
-        end
-        """
-
-      output = format(input, [])
-      assert output == desired_output
-    end
-
-    test "formats doctests in moduledocs, uppercase s sigil string" do
-      input =
-        """
-        defmodule Foo do
-          @moduledoc ~S/It adds two numbers together
-                  iex>     Foo.add(4,2)
-                  6
-                /
-          @spec add(a :: integer, b :: integer) :: integer
-          def add(a, b) do
-            a + b
-          end
-        end
-        """
-
-      desired_output =
-        """
-        defmodule Foo do
-          @moduledoc ~S/It adds two numbers together
-                  iex> Foo.add(4, 2)
-                  6
-                /
-          @spec add(a :: integer, b :: integer) :: integer
-          def add(a, b) do
-            a + b
-          end
         end
         """
 
