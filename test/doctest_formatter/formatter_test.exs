@@ -3,6 +3,37 @@ defmodule DoctestFormatter.FormatterTest do
 
   import DoctestFormatter.Formatter
 
+  test "exception_result?/1" do
+    assert exception_result?("** (RuntimeError) some error")
+    assert exception_result?("   ** (RuntimeError) some error  ")
+    assert exception_result?("\t** (SomeError) ")
+    assert exception_result?("  ** ( ")
+
+    refute exception_result?("**")
+    refute exception_result?("*")
+    refute exception_result?("")
+    refute exception_result?("3 + 4")
+  end
+
+  test "opaque_type_result?/1" do
+    assert opaque_type_result?("#User<>")
+    assert opaque_type_result?("  #User<>  ")
+    assert opaque_type_result?("\t#User<>  ")
+    assert opaque_type_result?("#Accounts.User<>")
+    assert opaque_type_result?("#Accounts.User<name: \"something\">")
+    assert opaque_type_result?("#Accounts.User<name: \"something\", ...>")
+    assert opaque_type_result?("#SomeModule345<>")
+    assert opaque_type_result?("#Foo.SomeModule345<>")
+    assert opaque_type_result?("#DateTime<2023-06-26 09:30:00+09:00 JST Asia/Tokyo>")
+
+    refute opaque_type_result?("#")
+    refute opaque_type_result?("# ")
+    refute opaque_type_result?("# comment")
+    refute opaque_type_result?("#not_a_module")
+    refute opaque_type_result?("")
+    refute opaque_type_result?("3 + 2")
+  end
+
   describe "format/2 when no doctests" do
     test "works for empty strings" do
       assert format("", []) == "\n"
@@ -1041,6 +1072,43 @@ defmodule DoctestFormatter.FormatterTest do
           ...> |> Kernel.<>("Buzz")
           ...> |> Kernel.<>(nil)
           ** (ArgumentError) expected binary argument in <> operator but got: nil
+          \"""
+        end
+        """
+
+      output = format(input, [])
+      assert output == desired_output
+    end
+  end
+
+  describe "format/2 on opaque types" do
+    test "can handle exceptions in results" do
+      input =
+        """
+        defmodule Foo do
+          defmodule User do
+            @derive {Inspect, only: [:name]}
+            defstruct [:name, :email]
+          end
+
+          @doc \"""
+          iex>    %Foo.User{name: "Bob", email: "bob123@example.com"}
+              #Foo.User<name: "Bob", ...>
+          \"""
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          defmodule User do
+            @derive {Inspect, only: [:name]}
+            defstruct [:name, :email]
+          end
+
+          @doc \"""
+          iex> %Foo.User{name: "Bob", email: "bob123@example.com"}
+          #Foo.User<name: "Bob", ...>
           \"""
         end
         """

@@ -1,5 +1,5 @@
 diff --git a/smoke_test_data/elixir-1-13/project_with_unformatted_code/lib/project_with_unformatted_code.ex b/smoke_test_data/elixir-1-13/project_with_unformatted_code/lib/project_with_unformatted_code.ex
-index 5b65e4d..98f817c 100644
+index 865085b..95fa7dc 100644
 --- a/smoke_test_data/elixir-1-13/project_with_unformatted_code/lib/project_with_unformatted_code.ex
 +++ b/smoke_test_data/elixir-1-13/project_with_unformatted_code/lib/project_with_unformatted_code.ex
 @@ -2,7 +2,7 @@ defmodule ProjectWithUnformattedCode do
@@ -52,3 +52,12 @@ index 5b65e4d..98f817c 100644
    """
    def subtract(a, b) do
      a - b
+@@ -41,7 +57,7 @@ defmodule ProjectWithUnformattedCode do
+   end
+ 
+   @doc """
+-      iex>   ProjectWithUnformattedCode.alice()
++      iex> ProjectWithUnformattedCode.alice()
+       #ProjectWithUnformattedCode.User<name: "Alice", ...>
+   """
+   def alice do
