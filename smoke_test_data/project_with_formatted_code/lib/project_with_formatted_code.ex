@@ -53,4 +53,17 @@ defmodule ProjectWithFormattedCode do
   def subtract(a, b) do
     a - b
   end
+
+  defmodule User do
+    @derive {Inspect, only: [:name]}
+    defstruct [:name, :email]
+  end
+
+  @doc """
+      iex> ProjectWithFormattedCode.alice()
+      #ProjectWithFormattedCode.User<name: "Alice", ...>
+  """
+  def alice do
+    %User{name: "Alice", email: "alice99@example.com"}
+  end
 end
