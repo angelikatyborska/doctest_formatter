@@ -105,7 +105,7 @@ defmodule DoctestFormatter.Formatter do
       |> Enum.join("\n")
 
     string_result =
-      if exception_result?(string_result) do
+      if exception_result?(string_result) || opaque_type_result?(string_result) do
         string_result
         |> String.trim()
       else
@@ -121,8 +121,12 @@ defmodule DoctestFormatter.Formatter do
     end)
   end
 
-  defp exception_result?(string) do
+  def exception_result?(string) do
     string |> String.trim() |> String.starts_with?("** (")
+  end
+
+  def opaque_type_result?(string) do
+    string |> String.trim() |> String.match?(~r/#([A-z0-9\.]*)<(.*)>/)
   end
 
   defp get_prompt(chunk, line_index) do
