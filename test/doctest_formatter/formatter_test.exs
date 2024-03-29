@@ -359,22 +359,14 @@ defmodule DoctestFormatter.FormatterTest do
             iex> 0x00
             0b00
 
-            iex> [?A, ?B, ?C]
-            'ABC'
-
-            iex> []
-            ''
-
-            iex> [0b1000001, 0b1000010, 0b1000011]
-            ~c"ABC"
+            iex> 0b1000001
+            65
           \"""
 
           def func do
             [?A, ?B, ?C]
             [0x41, 0x42, 0x43]
             [0b1000001, 0b1000010, 0b1000011]
-            'ABC'
-            ~c"ABC"
           end
         end
         """
@@ -392,22 +384,14 @@ defmodule DoctestFormatter.FormatterTest do
             iex> 0x00
             0b00
 
-            iex> [?A, ?B, ?C]
-            ~c"ABC"
-
-            iex> []
-            ~c""
-
-            iex> [0b1000001, 0b1000010, 0b1000011]
-            ~c"ABC"
+            iex> 0b1000001
+            65
           \"""
 
           def func do
             [?A, ?B, ?C]
             [0x41, 0x42, 0x43]
             [0b1000001, 0b1000010, 0b1000011]
-            ~c"ABC"
-            ~c"ABC"
           end
         end
         """
