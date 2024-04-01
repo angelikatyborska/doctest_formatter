@@ -57,6 +57,30 @@ This formatter plugin will not only format the Elixir code inside the doctest, b
 
 ## Known limitations
 
+### Double-escaped quotes
+
+This plugin cannot handle doctests with double-escaped quotes like this:
+
+```elixir
+@doc """
+iex> "\\""
+~S(")
+"""
+```
+
+The above is a valid doctest, but this plugin is unable to parse it into an AST and then correctly back into a string. Such cases will produce logger warnings.
+
+You can ignore the warnings and accept that this doctests won't be formatted, or you can try the below workaround.
+
+The workaround is to rewrite the whole `@doc`/`@moduledoc` attribute using the `sigil_S`, which does not allow escape characters. This doctest will work exactly the same as the one above, and it will get formatted by this plugin:
+
+```elixir
+@doc ~S"""
+iex> "\""
+~S(")
+"""
+```
+
 ### Dynamic value
 
 This plugin will only format string literals and `s`/`S` sigil literal values of `@doc`/`@moduledoc`. It will not format strings with interpolation or other dynamic values. For example:
