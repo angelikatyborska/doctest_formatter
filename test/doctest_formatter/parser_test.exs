@@ -47,8 +47,8 @@ defmodule DoctestFormatter.ParserTest do
                %DoctestExpression{lines: ["1 + 2"], result: ["3"], indentation: {:spaces, 0}}
              ]
 
-      assert parse("  iex> 1 + 2\n  3") == [
-               %DoctestExpression{lines: ["1 + 2"], result: ["  3"], indentation: {:spaces, 2}}
+      assert parse("  iex>   1 + 2\n  3") == [
+               %DoctestExpression{lines: ["  1 + 2"], result: ["  3"], indentation: {:spaces, 2}}
              ]
 
       assert parse("    iex> 1 + 2\n3") == [
@@ -73,9 +73,9 @@ defmodule DoctestFormatter.ParserTest do
                }
              ]
 
-      assert parse("  iex> 1 +\n  ...> 2 +\n  ...> 4\n  7") == [
+      assert parse("  iex>   1 +\n  ...>   2 +\n  ...>   4\n  7") == [
                %DoctestExpression{
-                 lines: ["1 +", "2 +", "4"],
+                 lines: ["  1 +", "  2 +", "  4"],
                  result: ["  7"],
                  indentation: {:spaces, 2}
                }
