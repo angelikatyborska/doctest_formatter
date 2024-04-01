@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 (2024-04-01)
 
 - Support opaque types in doctest results (e.g. `#User<name: "", ...>`).
 - Do not crash when doctests contain double-escaped quotes. Instead, print a warning and leave the code snippet unformatted.
