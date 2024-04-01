@@ -17,7 +17,7 @@ defmodule DoctestFormatter.Formatter do
 
     {forms, comments} = Code.string_to_quoted_with_comments!(content, to_quoted_opts)
 
-    to_algebra_opts = [comments: comments] ++ opts
+    to_algebra_opts = [comments: comments, escape: false] ++ opts
 
     forms =
       Macro.prewalk(forms, fn node ->
@@ -50,7 +50,7 @@ defmodule DoctestFormatter.Formatter do
       end)
 
     forms
-    |> Code.Formatter.to_algebra(to_algebra_opts)
+    |> Code.quoted_to_algebra(to_algebra_opts)
     |> Inspect.Algebra.format(default_elixir_line_length())
     |> Kernel.++(["\n"])
     |> IO.iodata_to_binary()
