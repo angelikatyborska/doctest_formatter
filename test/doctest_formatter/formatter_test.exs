@@ -1049,6 +1049,39 @@ defmodule DoctestFormatter.FormatterTest do
       output = format(input, opts)
       assert output == desired_output
     end
+
+    test "uses the desired line length for the non-doctest code too" do
+      opts = [line_length: 300]
+
+      input =
+        """
+        defmodule Foo do
+          @doc \"""
+                        iex> "aaa"
+                        "a" <> "a" <> "a"
+          \"""
+          def my_long_function(argument1, argument2, argument3, argument4, argument5, argument6, argument7, argument8) do
+            (1000 + argument1 + argument2 + argument3 + argument4 + argument5 + argument6 + argument7 + argument8) * 2
+          end
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @doc \"""
+                        iex> "aaa"
+                        "a" <> "a" <> "a"
+          \"""
+          def my_long_function(argument1, argument2, argument3, argument4, argument5, argument6, argument7, argument8) do
+            (1000 + argument1 + argument2 + argument3 + argument4 + argument5 + argument6 + argument7 + argument8) * 2
+          end
+        end
+        """
+
+      output = format(input, opts)
+      assert output == desired_output
+    end
   end
 
   describe "format/2 on exceptions" do
