@@ -16,7 +16,7 @@ The package can be installed by adding `doctest_formatter` to your list of depen
 ```elixir
 def deps do
   [
-    {:doctest_formatter, "~> 0.3.0", runtime: false}
+    {:doctest_formatter, "~> 0.3.1", runtime: false}
   ]
 end
 ```
