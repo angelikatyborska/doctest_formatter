@@ -74,9 +74,11 @@ defmodule DoctestFormatter.Formatter do
         end
       end)
 
+    desired_line_length = Keyword.get(opts, :line_length, default_elixir_line_length())
+
     forms
     |> Code.quoted_to_algebra(to_algebra_opts)
-    |> Inspect.Algebra.format(default_elixir_line_length())
+    |> Inspect.Algebra.format(desired_line_length)
     |> Kernel.++(["\n"])
     |> IO.iodata_to_binary()
   end
