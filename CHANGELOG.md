@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1 (2024-11-24)
+
+- Respect `line_length` option when formatting the whole `.ex` file. 
+
 ## 0.3.0 (2024-04-01)
 
 - Support opaque types in doctest results (e.g. `#User<name: "", ...>`).
