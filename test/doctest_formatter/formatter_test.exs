@@ -1051,6 +1051,8 @@ defmodule DoctestFormatter.FormatterTest do
     end
 
     test "uses the desired line length for the non-doctest code too" do
+      # 300 is much longer than the default 98 chars, if the formatter doesn't respect the option of 300 chars,
+      # it would try to split the long lines into multiple lines
       opts = [line_length: 300]
 
       input =
