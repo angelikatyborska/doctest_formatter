@@ -123,7 +123,14 @@ defmodule DoctestFormatter.Formatter do
     end
     |> Enum.with_index()
     |> Enum.map(fn {line, index} ->
-      Indentation.indent(get_prompt(chunk, index) <> line, chunk.indentation)
+      line_with_prompt =
+        if line == "" do
+          String.trim(get_prompt(chunk, index))
+        else
+          get_prompt(chunk, index) <> line
+        end
+
+      Indentation.indent(line_with_prompt, chunk.indentation)
     end)
   end
 
