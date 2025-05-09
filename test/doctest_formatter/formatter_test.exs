@@ -806,7 +806,7 @@ defmodule DoctestFormatter.FormatterTest do
           or
 
             iex> 3
-            ...>    Foo.add( 7 )
+            ...>    |> Foo.add( 7 )
                 10
           \"""
           @spec add(a :: integer, b :: integer) :: integer
@@ -826,7 +826,7 @@ defmodule DoctestFormatter.FormatterTest do
           or
 
             iex> 3
-            ...> Foo.add(7)
+            ...> |> Foo.add(7)
             10
           \"""
           @spec add(a :: integer, b :: integer) :: integer
@@ -1082,6 +1082,47 @@ defmodule DoctestFormatter.FormatterTest do
         """
 
       output = format(input, opts)
+      assert output == desired_output
+    end
+
+    test "does not create trailing spaces" do
+      input =
+        """
+        defmodule Foo do
+          @doc \"""
+          iex>   x = 3#{" "}
+          iex> #{"   "}
+          iex>    y = 4#{"   "}
+          iex>#{}
+          iex>    Foo.add(x,y)#{"   "}
+          7
+          \"""
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      desired_output =
+        """
+        defmodule Foo do
+          @doc \"""
+          iex> x = 3
+          ...>
+          ...> y = 4
+          ...>
+          ...> Foo.add(x, y)
+          7
+          \"""
+          @spec add(a :: integer, b :: integer) :: integer
+          def add(a, b) do
+            a + b
+          end
+        end
+        """
+
+      output = format(input, [])
       assert output == desired_output
     end
   end
