@@ -124,7 +124,7 @@ defmodule DoctestFormatter.Formatter do
     |> Enum.with_index()
     |> Enum.map(fn {line, index} ->
       line_with_prompt =
-        if line === "" do
+        if line == "" do
           String.trim(get_prompt(chunk, index))
         else
           get_prompt(chunk, index) <> line
