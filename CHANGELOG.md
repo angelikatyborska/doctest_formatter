@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Stop adding a trailing space to empty `iex>` lines.
+
 ## 0.3.1 (2024-11-24)
 
 - Respect `line_length` option when formatting the whole `.ex` file. 
