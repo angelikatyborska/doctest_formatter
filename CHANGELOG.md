@@ -2,7 +2,7 @@
 
 ## 0.4.1 (2025-09-08)
 
-- Stop adding a trailing space to empty `iex>` lines.
+- Fix trying to append to iodata (binary or charlist) with `Kernel.++/2` that only works for charlists.
 
 ## 0.4.0 (2025-05-09)
 
