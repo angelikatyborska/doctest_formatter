@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1 (2025-09-08)
+
+- Stop adding a trailing space to empty `iex>` lines.
+
 ## 0.4.0 (2025-05-09)
 
 - Stop adding a trailing space to empty `iex>` lines.
