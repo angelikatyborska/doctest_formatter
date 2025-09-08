@@ -79,8 +79,8 @@ defmodule DoctestFormatter.Formatter do
     forms
     |> Code.quoted_to_algebra(to_algebra_opts)
     |> Inspect.Algebra.format(desired_line_length)
-    |> Kernel.++(["\n"])
     |> IO.iodata_to_binary()
+    |> Kernel.<>("\n")
   end
 
   defp format_doc_content(doc_content, opts, doc_metadata) do
