@@ -31,6 +31,8 @@ jobs:
             current_version: true
           - elixir: '1.19.0'
             otp: '28.1'
+          - elixir: '1.20.1'
+            otp: '29.0'
             current_version: true
 
     steps:
